@@ -1,0 +1,114 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+    <!-- I've chagned this -->
+    <!-- <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks> -->
+		<TargetFrameworks>net10.0;net10.0-android;</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
+		<!-- <TargetFrameworks>$(TargetFrameworks);net8.0-tizen</TargetFrameworks> -->
+
+		<!-- Note for MacCatalyst:
+		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
+		When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
+		The Mac App Store will NOT accept apps with ONLY maccatalyst-arm64 indicated;
+		either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
+		<!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
+
+<!--		<OutputType>Exe</OutputType>-->
+  <!-- solution from here: https://stackoverflow.com/questions/72993478/program-does-not-contain-a-static-main-method-suitable-for-an-entry-point-in -->
+    <OutputType Condition="'$(TargetFramework)' != 'net10.0'">Exe</OutputType>
+
+    
+		<RootNamespace>Relate</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+    <NoWarn>MVVMTK0045</NoWarn>
+
+		<!-- Display name -->
+		<ApplicationTitle>Relate</ApplicationTitle>
+
+		<!-- App Identifier -->
+		<ApplicationId>com.companyname.relate</ApplicationId>
+
+		<!-- Versions: the app version is <VersionPrefix>-<build>, see the Android group below -->
+		<VersionPrefix>0.0.1</VersionPrefix>
+		<ApplicationDisplayVersion>$(VersionPrefix)</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
+    <NullabilityInfoContextSupport>true</NullabilityInfoContextSupport>
+
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+	</PropertyGroup>
+
+	<!-- Android version:
+	     - versionName = 0.0.1-<build>; CI passes -p:AppBuildNumber=<GitHub run number>,
+	       local builds use the UTC build timestamp (yyyyMMddHHmmss).
+	     - versionCode = minutes since 2025-01-01 UTC (638712864000000000 ticks), so every build,
+	       local or CI, has a higher versionCode than the previous one and can update it.
+	     Only Android gets the suffix: other platforms require a purely numeric version, and keeping
+	     net10.0 (used by the unit tests) stable avoids a full rebuild on every test run. -->
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<AppBuildNumber Condition="'$(AppBuildNumber)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddHHmmss'))</AppBuildNumber>
+		<VersionSuffix>$(AppBuildNumber)</VersionSuffix>
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+		<ApplicationDisplayVersion>$(VersionPrefix)-$(AppBuildNumber)</ApplicationDisplayVersion>
+		<ApplicationVersion>$([System.Math]::Floor($([MSBuild]::Divide($([MSBuild]::Subtract($([System.DateTime]::UtcNow.Ticks), 638712864000000000)), 600000000))))</ApplicationVersion>
+	</PropertyGroup>
+
+	<!-- Fast Deployment does not push the assemblies to the emulator (Rider) -> mono crashes with
+	     "No assemblies found ... Exiting". Force the assemblies into the APK for Debug/Android. -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+	</PropertyGroup>
+
+	<!-- MSIX package registration fails with 0x80073CFD (APPX_E_INSTALL_PREREQUISITE_FAILED)
+	     when launched from Rider. In Debug we build/run as unpackaged (a plain .exe). -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+		<WindowsPackageType>None</WindowsPackageType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#0A3D1C" />
+
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0D4A20" BaseSize="128,128" />
+
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
+		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+
+		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Maui" Version="15.0.1" />
+		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="8.0.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="CSharpFunctionalExtensions" Version="3.6.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.11" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.100" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="10.0.100" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.11" />
+		<PackageReference Include="OneOf" Version="3.0.271" />
+		<PackageReference Include="Syncfusion.Maui.Toolkit" Version="1.0.10" />
+	</ItemGroup>
+
+<!--	<ItemGroup>-->
+<!--	  <Compile Update="AppLogic\Models\AndroidContact.cs">-->
+<!--	    <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>-->
+<!--	  </Compile>-->
+<!--	</ItemGroup>-->
+
+</Project>

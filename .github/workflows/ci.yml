@@ -1,0 +1,141 @@
+# Other branches: every push runs the unit tests.
+# main: only a push that changes code (src/) runs the tests and, if they pass, builds a signed
+# APK and publishes it as a GitHub pre-release tagged v<VersionPrefix>-<run number>, e.g. v0.0.1-42.
+# A push to main touching only docs, this workflow or other non-code files skips both.
+# "Run workflow" (workflow_dispatch) counts as a code change, e.g. to release after a pipeline fix.
+name: CI
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check for code changes (src/)
+        id: diff
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          code=true
+          # Manual run or a newly created branch (no previous commit) - treat as a code change
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            # If the previous commit can't be fetched (e.g. after a force push), keep code=true
+            if git fetch --no-tags --depth=1 origin "$BEFORE" && git diff --quiet "$BEFORE" "$GITHUB_SHA" -- src/; then
+              code=false
+            fi
+          fi
+          echo "Code changed: $code"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: changes
+    if: github.ref != 'refs/heads/main' || needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: src/global.json
+
+      # Restoring Relate.csproj (multi-targeted, incl. net10.0-android) needs the workload
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Run unit tests
+        run: dotnet test src/UnitTests/UnitTests.csproj
+
+  release:
+    needs: [changes, test]
+    if: github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      PROJECT: src/Relate/Relate.csproj
+      FRAMEWORK: net10.0-android
+      BUILD_NUMBER: ${{ github.run_number }}
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: src/global.json
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: microsoft
+          java-version: '17'
+
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Install Android SDK dependencies
+        run: >
+          dotnet build "$PROJECT" -t:InstallAndroidDependencies -f "$FRAMEWORK"
+          -p:AndroidSdkDirectory="$ANDROID_HOME" -p:AcceptAndroidSDKLicenses=True
+
+      # Without our own key every run would be signed with a fresh debug key,
+      # and Android refuses to update an app signed with a different key.
+      - name: Restore signing keystore
+        run: |
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing repository secret $name (see README, 'Release signing')."
+              exit 1
+            fi
+          done
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/relate.keystore"
+
+      - name: Build signed APK
+        # Passwords are read by the Android build from environment variables (env: prefix),
+        # so they never appear on the command line.
+        run: >
+          dotnet publish "$PROJECT" -f "$FRAMEWORK" -c Release
+          -p:AndroidPackageFormat=apk
+          -p:AppBuildNumber="$BUILD_NUMBER"
+          -p:AndroidKeyStore=true
+          -p:AndroidSigningKeyStore="$RUNNER_TEMP/relate.keystore"
+          -p:AndroidSigningKeyAlias="$ANDROID_KEY_ALIAS"
+          -p:AndroidSigningStorePass=env:ANDROID_KEYSTORE_PASSWORD
+          -p:AndroidSigningKeyPass=env:ANDROID_KEY_PASSWORD
+
+      - name: Prepare release asset
+        run: |
+          version=$(dotnet msbuild "$PROJECT" -getProperty:ApplicationDisplayVersion \
+            -p:TargetFramework="$FRAMEWORK" -p:AppBuildNumber="$BUILD_NUMBER")
+          apk=$(find src/Relate/bin/Release/$FRAMEWORK/publish -name '*-Signed.apk' | head -n 1)
+          if [ -z "$apk" ]; then
+            echo "::error::Signed APK not found in the publish output."
+            exit 1
+          fi
+          mkdir -p dist
+          cp "$apk" "dist/Relate-$version.apk"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "v$VERSION" "dist/Relate-$VERSION.apk"
+          --target "$GITHUB_SHA"
+          --title "Relate $VERSION"
+          --prerelease
+          --generate-notes
+
+      - name: Remove keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/relate.keystore"

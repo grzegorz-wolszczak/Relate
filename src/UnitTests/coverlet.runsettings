@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+   <DataCollectionRunSettings>
+      <DataCollectors>
+         <DataCollector friendlyName="XPlat code coverage">
+            <Configuration>
+               <Format>cobertura</Format>
+               <!-- Only the Relate assembly; skip test project + framework -->
+               <Include>[Relate]*</Include>
+               <!-- Exclude UI, composition root, and platform/IO shells that carry no unit-testable logic -->
+               <ExcludeByFile>
+                  **/Pages/**,
+                  **/Views/**,
+                  **/Platforms/**,
+                  **/MauiProgram.cs,
+                  **/App.xaml.cs,
+                  **/AppShell.cs,
+                  **/Services/Shell*.cs,
+                  **/Storage/IFileStore.cs,
+                  **/Storage/IBackupPathProvider.cs,
+                  **/AppLogic/Services/**,
+                  **/obj/**,
+                  **/generated/**
+               </ExcludeByFile>
+               <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+               <SkipAutoProps>true</SkipAutoProps>
+            </Configuration>
+         </DataCollector>
+      </DataCollectors>
+   </DataCollectionRunSettings>
+</RunSettings>
