@@ -730,3 +730,6 @@ $RECYCLE.BIN/
 # C# obj directory
 obj/
 
+
+# Documentation assets (README screenshots) - re-include despite the artifacts/ rule above
+!docs/artifacts/
