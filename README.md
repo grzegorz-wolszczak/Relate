@@ -95,6 +95,10 @@ build (local or CI) can be installed as an update of the previous one.
   pass, builds a signed APK and publishes it as a GitHub **pre-release** tagged
   `v0.1.0-<run number>`. A push to `main` that changes only docs, the pipeline or other
   non-code files skips both.
+- **No release for a code change:** put `[skip release]` anywhere in the commit message of
+  the pushed (latest) commit, e.g. `refactor: tidy up tests [skip release]`. The unit tests
+  still run, but no APK is built and no release is published. With several commits in one
+  push, only the last commit's message counts.
 - A manual run (*Run workflow*) on `main` always tests and releases, e.g. after fixing
   the pipeline itself.
 

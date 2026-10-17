@@ -34,7 +34,7 @@ public class CallDisplayHelperLastContactCardTests
    }
 
    [Fact]
-   public void A_in_person_contact_shows_the_type_and_date_but_no_duration_line()
+   public void An_in_person_contact_shows_the_type_and_date_but_no_duration_line()
    {
       // Arrange
       var lastContact = At.Utc(2026, 8, 20);

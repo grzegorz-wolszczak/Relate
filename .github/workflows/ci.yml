@@ -2,7 +2,10 @@
 # main: only a push that changes code (src/) runs the tests and, if they pass, builds a signed
 # APK and publishes it as a GitHub pre-release tagged v<VersionPrefix>-<run number>, e.g. v0.1.0-42.
 # A push to main touching only docs, this workflow or other non-code files skips both.
-# "Run workflow" (workflow_dispatch) counts as a code change, e.g. to release after a pipeline fix.
+# A push to main whose head commit message contains "[skip release]" still runs the tests but
+# does not release (for code changes that don't deserve a new version, e.g. refactors or tests).
+# "Run workflow" (workflow_dispatch) counts as a code change and always releases, e.g. to release
+# after a pipeline fix.
 name: CI
 
 on:
@@ -17,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       code: ${{ steps.diff.outputs.code }}
+      release: ${{ steps.diff.outputs.release }}
     steps:
       - uses: actions/checkout@v5
 
@@ -24,6 +28,7 @@ jobs:
         id: diff
         env:
           BEFORE: ${{ github.event.before }}
+          HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           code=true
           # Manual run or a newly created branch (no previous commit) - treat as a code change
@@ -35,6 +40,15 @@ jobs:
           fi
           echo "Code changed: $code"
           echo "code=$code" >> "$GITHUB_OUTPUT"
+
+          # "[skip release]" in the head commit message: test, but don't publish a release.
+          # (The message is empty for a manual run, so that one always releases.)
+          release=$code
+          case "${HEAD_COMMIT_MESSAGE,,}" in
+            *"[skip release]"*) release=false ;;
+          esac
+          echo "Release: $release"
+          echo "release=$release" >> "$GITHUB_OUTPUT"
 
   test:
     needs: changes
@@ -56,7 +70,7 @@ jobs:
 
   release:
     needs: [changes, test]
-    if: github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
+    if: github.ref == 'refs/heads/main' && needs.changes.outputs.release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write

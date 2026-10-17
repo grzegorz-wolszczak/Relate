@@ -180,7 +180,7 @@ public class CallScheduleCalculatorTests
    }
 
    [Fact]
-   public void Long_call_more_recent_than_a_in_person_contact_wins()
+   public void Long_call_more_recent_than_an_in_person_contact_wins()
    {
       // Arrange
       var calls = Calls((Now.AddDays(-2), 45));
@@ -197,7 +197,7 @@ public class CallScheduleCalculatorTests
    }
 
    [Fact]
-   public void A_in_person_contact_winning_over_a_call_reports_no_call_duration()
+   public void An_in_person_contact_winning_over_a_call_reports_no_call_duration()
    {
       // Arrange
       var calls = Calls((Now.AddDays(-20), 45));
@@ -212,7 +212,7 @@ public class CallScheduleCalculatorTests
    }
 
    [Fact]
-   public void No_calls_but_a_in_person_contact_is_recorded_uses_the_in_person_contact()
+   public void No_calls_but_an_in_person_contact_is_recorded_uses_the_in_person_contact()
    {
       // Arrange
       var manualDates = new List<(ContactType, DateTimeOffset?)> {(ContactType.InPerson, Now.AddDays(-10))};
