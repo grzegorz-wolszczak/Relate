@@ -26,6 +26,8 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
     <NoWarn>MVVMTK0045</NoWarn>
+    <!-- the plain net10.0 target exists only for unit tests; the MAUI toolkit APIs are platform-only there -->
+    <NoWarn Condition="'$(TargetFramework)' == 'net10.0'">$(NoWarn);CA1416</NoWarn>
 
 		<!-- Display name -->
 		<ApplicationTitle>Relate</ApplicationTitle>
@@ -34,7 +36,7 @@
 		<ApplicationId>com.companyname.relate</ApplicationId>
 
 		<!-- Versions: the app version is <VersionPrefix>-<build>, see the Android group below -->
-		<VersionPrefix>0.0.1</VersionPrefix>
+		<VersionPrefix>0.1.0</VersionPrefix>
 		<ApplicationDisplayVersion>$(VersionPrefix)</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
     <NullabilityInfoContextSupport>true</NullabilityInfoContextSupport>
@@ -48,7 +50,7 @@
 	</PropertyGroup>
 
 	<!-- Android version:
-	     - versionName = 0.0.1-<build>; CI passes -p:AppBuildNumber=<GitHub run number>,
+	     - versionName = 0.1.0-<build>; CI passes -p:AppBuildNumber=<GitHub run number>,
 	       local builds use the UTC build timestamp (yyyyMMddHHmmss).
 	     - versionCode = minutes since 2025-01-01 UTC (638712864000000000 ticks), so every build,
 	       local or CI, has a higher versionCode than the previous one and can update it.

@@ -36,7 +36,7 @@ public sealed class ContactDetailsPage : BaseContentPage<RelateContactVm>
       Second
    }
 
-   private enum LastMeetingColumns
+   private enum ManualContactColumns
    {
       Label,
       SetButton,
@@ -345,7 +345,9 @@ public sealed class ContactDetailsPage : BaseContentPage<RelateContactVm>
             BackgroundColor = Colors.Transparent,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            MaximumDate = DateTime.Today
+            // End of today, not midnight: the platform picker converts this to an instant, and a
+            // midnight bound can make "today" unselectable late in the evening (observed ~22:00-23:30).
+            MaximumDate = DateTime.Today.AddDays(1).AddTicks(-1)
          }
          .Bind(DatePicker.DateProperty,
             getter: (ManualContactEntryVm e) => e.DateOrToday,
@@ -369,9 +371,9 @@ public sealed class ContactDetailsPage : BaseContentPage<RelateContactVm>
             Content = new Grid()
                {
                   ColumnDefinitions = Columns.Define(
-                     (LastMeetingColumns.Label, Star)
-                     , (LastMeetingColumns.SetButton, Auto)
-                     , (LastMeetingColumns.ClearButton, Auto)
+                     (ManualContactColumns.Label, Star)
+                     , (ManualContactColumns.SetButton, Auto)
+                     , (ManualContactColumns.ClearButton, Auto)
                   ),
                   ColumnSpacing = 8,
                   Children =
@@ -383,9 +385,9 @@ public sealed class ContactDetailsPage : BaseContentPage<RelateContactVm>
                         .Font(bold: true, size: 14)
                         .CenterVertical()
                         .Bind(Label.TextProperty, getter: (ManualContactEntryVm e) => e.SummaryDisplay)
-                        .Column(LastMeetingColumns.Label),
+                        .Column(ManualContactColumns.Label),
                      setOverlay
-                        .Column(LastMeetingColumns.SetButton),
+                        .Column(ManualContactColumns.SetButton),
                      new Button()
                         {
                            BackgroundColor = SoftPalette.AccentDanger,
@@ -394,7 +396,7 @@ public sealed class ContactDetailsPage : BaseContentPage<RelateContactVm>
                            Padding = new Thickness(14, 6),
                         }
                         .Text("CLEAR")
-                        .Column(LastMeetingColumns.ClearButton)
+                        .Column(ManualContactColumns.ClearButton)
                         .Bind(Button.CommandProperty, getter: (ManualContactEntryVm e) => e.ClearCommand),
                   }
                }

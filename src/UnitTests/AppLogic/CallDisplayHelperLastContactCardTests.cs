@@ -34,16 +34,16 @@ public class CallDisplayHelperLastContactCardTests
    }
 
    [Fact]
-   public void A_meeting_shows_the_type_and_date_but_no_duration_line()
+   public void A_in_person_contact_shows_the_type_and_date_but_no_duration_line()
    {
       // Arrange
       var lastContact = At.Utc(2026, 8, 20);
 
       // Act
-      var text = CallDisplayHelper.GetLastContactCardDisplay(lastContact, ContactType.Meeting, null, Now, TimeZoneInfo.Utc);
+      var text = CallDisplayHelper.GetLastContactCardDisplay(lastContact, ContactType.InPerson, null, Now, TimeZoneInfo.Utc);
 
       // Assert
-      text.Should().Contain("Contact: 7d ago <meeting>");
+      text.Should().Contain("Contact: 7d ago <in-person>");
       text.Should().Contain("at: 2026-08-20");
       text.Should().NotContain("took");
    }
@@ -70,7 +70,7 @@ public class CallDisplayHelperLastContactCardTests
       var plusTwo = TimeZoneInfo.CreateCustomTimeZone("t", TimeSpan.FromHours(2), "t", "t");
 
       // Act
-      var text = CallDisplayHelper.GetLastContactCardDisplay(lastContact, ContactType.Meeting, null, Now, plusTwo);
+      var text = CallDisplayHelper.GetLastContactCardDisplay(lastContact, ContactType.InPerson, null, Now, plusTwo);
 
       // Assert
       text.Should().Contain("at: 2026-08-21"); // 23:00 UTC + 2h rolls into the next calendar day

@@ -164,11 +164,11 @@ public class CallScheduleCalculatorTests
    }
 
    [Fact]
-   public void Meeting_more_recent_than_the_last_long_call_wins()
+   public void In_person_more_recent_than_the_last_long_call_wins()
    {
       // Arrange
       var calls = Calls((Now.AddDays(-20), 45));
-      var manualDates = new List<(ContactType, DateTimeOffset?)> {(ContactType.Meeting, Now.AddDays(-2))};
+      var manualDates = new List<(ContactType, DateTimeOffset?)> {(ContactType.InPerson, Now.AddDays(-2))};
 
       // Act
       var result = Recalc(calls, noContactPeriodDays: 30, manualDates: manualDates);
@@ -176,15 +176,15 @@ public class CallScheduleCalculatorTests
       // Assert
       result.NextCallInDays.Should().Be(28);
       result.LastContactDateTime!.Value.Date.Should().Be(Now.AddDays(-2).Date);
-      result.LastContactType.Should().Be(ContactType.Meeting);
+      result.LastContactType.Should().Be(ContactType.InPerson);
    }
 
    [Fact]
-   public void Long_call_more_recent_than_a_meeting_wins()
+   public void Long_call_more_recent_than_a_in_person_contact_wins()
    {
       // Arrange
       var calls = Calls((Now.AddDays(-2), 45));
-      var manualDates = new List<(ContactType, DateTimeOffset?)> {(ContactType.Meeting, Now.AddDays(-20))};
+      var manualDates = new List<(ContactType, DateTimeOffset?)> {(ContactType.InPerson, Now.AddDays(-20))};
 
       // Act
       var result = Recalc(calls, noContactPeriodDays: 30, manualDates: manualDates);
@@ -197,32 +197,32 @@ public class CallScheduleCalculatorTests
    }
 
    [Fact]
-   public void A_meeting_winning_over_a_call_reports_no_call_duration()
+   public void A_in_person_contact_winning_over_a_call_reports_no_call_duration()
    {
       // Arrange
       var calls = Calls((Now.AddDays(-20), 45));
-      var manualDates = new List<(ContactType, DateTimeOffset?)> {(ContactType.Meeting, Now.AddDays(-2))};
+      var manualDates = new List<(ContactType, DateTimeOffset?)> {(ContactType.InPerson, Now.AddDays(-2))};
 
       // Act
       var result = Recalc(calls, noContactPeriodDays: 30, manualDates: manualDates);
 
       // Assert
-      result.LastContactType.Should().Be(ContactType.Meeting);
+      result.LastContactType.Should().Be(ContactType.InPerson);
       result.LastContactCallDuration.Should().BeNull();
    }
 
    [Fact]
-   public void No_calls_but_a_meeting_is_recorded_uses_the_meeting()
+   public void No_calls_but_a_in_person_contact_is_recorded_uses_the_in_person_contact()
    {
       // Arrange
-      var manualDates = new List<(ContactType, DateTimeOffset?)> {(ContactType.Meeting, Now.AddDays(-10))};
+      var manualDates = new List<(ContactType, DateTimeOffset?)> {(ContactType.InPerson, Now.AddDays(-10))};
 
       // Act
       var result = Recalc(Calls(), noContactPeriodDays: 30, manualDates: manualDates);
 
       // Assert
       result.NextCallInDays.Should().Be(20);
-      result.LastContactType.Should().Be(ContactType.Meeting);
+      result.LastContactType.Should().Be(ContactType.InPerson);
    }
 
    [Fact]
@@ -231,7 +231,7 @@ public class CallScheduleCalculatorTests
       // Arrange
       var manualDates = new List<(ContactType, DateTimeOffset?)>
       {
-         (ContactType.Meeting, Now.AddDays(-15)),
+         (ContactType.InPerson, Now.AddDays(-15)),
          (ContactType.VideoCall, Now.AddDays(-3)),
       };
 

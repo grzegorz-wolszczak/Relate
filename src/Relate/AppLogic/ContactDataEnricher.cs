@@ -61,7 +61,12 @@ public class ContactDataEnricher : IContactDataEnricher
       myContact.SetPhoneNumbers(
          systemContact.Phones.Select(x => new CallablePhoneNumber(x.PhoneNumber, x.Label)).ToList());
 
-      var contactImageOneOf = await _photoService.GetContactPhoto(myContact.ContactId);
+      if (myContact.ContactId is not { } contactId)
+      {
+         return;
+      }
+
+      var contactImageOneOf = await _photoService.GetContactPhoto(contactId);
       contactImageOneOf.Switch(image =>
       {
          if (image is not null)

@@ -8,22 +8,23 @@ namespace Relate;
 
 public partial class App : Application
 {
+   private readonly AppShell _shell;
    private readonly ContactListVm _contactListVm;
 
    public App(AppShell shell, ContactListVm contactListVm)
    {
+      _shell = shell;
       _contactListVm = contactListVm;
       // Always use light colors (light backgrounds, dark text), regardless of
       // the device's system theme - must be set before InitializeComponent so
       // AppThemeBinding resources in Styles.xaml resolve to their Light branch.
       UserAppTheme = AppTheme.Light;
       InitializeComponent();
-      MainPage = shell;
    }
 
    protected override Window CreateWindow(IActivationState? activationState)
    {
-      var window = base.CreateWindow(activationState);
+      var window = new Window(_shell);
 
       // pretend we're on a tablet by making the window taller than it is wide
       double newWidth = 600;

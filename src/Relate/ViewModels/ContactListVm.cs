@@ -45,7 +45,7 @@ public partial class ContactListVm : BaseVm, IContactRemover
    private bool _isListRefreshing;
 
    [ObservableProperty]
-   private string _searchBarText;
+   private string? _searchBarText;
 
    [ObservableProperty]
    private bool _isSearchBarFocused;
@@ -106,7 +106,20 @@ public partial class ContactListVm : BaseVm, IContactRemover
       try
       {
          IsListRefreshing = true;
-         await LoadContacts();
+
+         // Storage is only written on page disappearing / app sleep (see Save), so it can be
+         // behind the in-memory contacts - e.g. a manual contact date set on the details page.
+         // Re-reading it would discard those edits, so refresh the system data of the contacts
+         // we already have. Storage is only read when nothing has been loaded yet.
+         var contacts = _contactList.Items;
+         if (contacts.Count == 0)
+         {
+            await LoadContacts();
+         }
+         else
+         {
+            await _dataEnricher.RefreshCollection(contacts);
+         }
       }
       finally
       {

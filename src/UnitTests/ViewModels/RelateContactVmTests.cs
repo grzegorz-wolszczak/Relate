@@ -101,13 +101,13 @@ public class RelateContactVmTests
       vm.NextCallInDays.Should().Be(0); // no calls, no manual dates yet
 
       // Act
-      var meeting = vm.ManualContactEntries.Single(e => e.Type == ContactType.Meeting);
-      meeting.Date = Now.AddDays(-10);
+      var inPerson = vm.ManualContactEntries.Single(e => e.Type == ContactType.InPerson);
+      inPerson.Date = Now.AddDays(-10);
 
       // Assert
       vm.NextCallInDays.Should().Be(20);
-      vm.LastContactType.Should().Be(ContactType.Meeting);
-      vm.LastContactCardDisplay.Should().Contain("meeting");
+      vm.LastContactType.Should().Be(ContactType.InPerson);
+      vm.LastContactCardDisplay.Should().Contain("in-person");
    }
 
    [Fact]
@@ -117,12 +117,12 @@ public class RelateContactVmTests
       var vm = new RelateContactVmBuilder()
          .Now(Now)
          .WithSettings(30, 30, aggregate: true)
-         .WithManualContactDate(ContactType.Meeting, Now.AddDays(-10))
+         .WithManualContactDate(ContactType.InPerson, Now.AddDays(-10))
          .Build();
       vm.NextCallInDays.Should().Be(20);
 
       // Act
-      vm.ManualContactEntries.Single(e => e.Type == ContactType.Meeting).ClearCommand.Execute(null);
+      vm.ManualContactEntries.Single(e => e.Type == ContactType.InPerson).ClearCommand.Execute(null);
 
       // Assert
       vm.NextCallInDays.Should().Be(0);

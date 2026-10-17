@@ -125,7 +125,7 @@ public class SettingsDtoJsonTests
          PhoneNumbers = [],
          ManualContactDates =
          [
-            new ManualContactDateDto { Type = ContactType.Meeting, Date = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero) }
+            new ManualContactDateDto { Type = ContactType.InPerson, Date = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero) }
          ]
       };
 
@@ -134,8 +134,23 @@ public class SettingsDtoJsonTests
       var round = JsonSerializer.Deserialize<RelateContactDto>(json)!;
 
       // Assert
-      json.Should().Contain("\"manualContactDates\"").And.Contain("\"Meeting\"");
+      json.Should().Contain("\"manualContactDates\"").And.Contain("\"InPerson\"");
       round.ManualContactDates.Should().BeEquivalentTo(dto.ManualContactDates);
+   }
+
+   [Fact]
+   public void RelateContactDto_reads_the_legacy_Meeting_type_name_as_in_person()
+   {
+      // Arrange
+      var json = """
+         { "id": "1", "displayName": "Ann", "manualContactDates": [ { "type": "Meeting", "date": "2026-05-01T00:00:00+00:00" } ] }
+         """;
+
+      // Act
+      var dto = JsonSerializer.Deserialize<RelateContactDto>(json)!;
+
+      // Assert
+      dto.ManualContactDates.Should().ContainSingle().Which.Type.Should().Be(ContactType.InPerson);
    }
 
    [Fact]

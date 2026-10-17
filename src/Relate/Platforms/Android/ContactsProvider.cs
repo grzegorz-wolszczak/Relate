@@ -75,8 +75,14 @@ public class ContactsProvider
 
    static AndroidPhoneNumber[] GetNumbers(Context ctx, string contactId)
    {
+      var phoneUri = ContactsContract.CommonDataKinds.Phone.ContentUri;
+      if (phoneUri is null)
+      {
+         return Array.Empty<AndroidPhoneNumber>();
+      }
+
       using var cursor = ctx.ContentResolver?.Query(
-         ContactsContract.CommonDataKinds.Phone.ContentUri,
+         phoneUri,
          null,
          ContactsContract.CommonDataKinds.Phone.InterfaceConsts.ContactId + " = ?",
          new[] {contactId},
@@ -132,6 +138,7 @@ public class ContactsProvider
       if (id is null) return null;
       var tempResults = new List<AndroidContact>();
       var uri = ContactsContract.Contacts.ContentUri;
+      if (uri is null) return null;
       var ctx = Android.App.Application.Context;
       var projection = new string[]
       {
@@ -141,7 +148,7 @@ public class ContactsProvider
       };
 
 
-      using ICursor? cursor = ctx.ContentResolver.Query(
+      using ICursor? cursor = ctx.ContentResolver?.Query(
          uri,
          projection,
          selection: ContactsContract.Contacts.InterfaceConsts.Id + " = ?",
@@ -160,14 +167,19 @@ public class ContactsProvider
 
       do
       {
-         string contactId = GetString(cursor, ContactsContract.Contacts.InterfaceConsts.Id);
+         var contactId = GetString(cursor, ContactsContract.Contacts.InterfaceConsts.Id);
+         if (contactId is null)
+         {
+            continue;
+         }
+
          //var photoThumbnailUri = GetString(cursor, ContactsContract.Contacts.InterfaceConsts.PhotoThumbnailUri);
          var displayName = GetString(cursor, ContactsContract.Contacts.InterfaceConsts.DisplayName);
          var numbers = GetNumbers(ctx, contactId);
 
          tempResults.Add(new()
          {
-            DisplayName = displayName,
+            DisplayName = displayName ?? $"Contact:{contactId}",
             Id = contactId,
             Phones = numbers
          });

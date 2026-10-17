@@ -26,7 +26,7 @@ out to next.
   (e.g. "talk at least every 30 days").
 - The **last contact** is detected automatically from the phone's call log. Only calls longer
   than a configurable minimum count as a real conversation.
-- **Meetings and video calls** can be entered manually, since they don't show up in the call log.
+- **In-person contacts, video calls and other contacts** can be entered manually, since they don't show up in the call log.
 - The contact list shows **when the next contact is due** and highlights overdue ones.
 - Call a contact directly from the app.
 - **Backup and restore** of your contacts and settings as a JSON file in the public
@@ -36,8 +36,8 @@ out to next.
 
 | Contact list | Contact details | Settings |
 |:---:|:---:|:---:|
-| <img src="docs/artifacts/main_screen_1.png" alt="Contact list with the next contact date for each person" width="240"> | <img src="docs/artifacts/contact_details_screen_1.png" alt="Contact details with per-contact settings and manual meeting / video call dates" width="240"> | <img src="docs/artifacts/settings_screen_1.png" alt="Default settings and backup" width="240"> |
-| Who to reach out to next | Per-contact settings, manual meetings and video calls | Defaults and backup |
+| <img src="docs/artifacts/main_screen_1.png" alt="Contact list with the next contact date for each person" width="240"> | <img src="docs/artifacts/contact_details_screen_1.png" alt="Contact details with per-contact settings and manual in-person / video call / other contact dates" width="240"> | <img src="docs/artifacts/settings_screen_1.png" alt="Default settings and backup" width="240"> |
+| Who to reach out to next | Per-contact settings, manual in-person, video call and other contact dates | Defaults and backup |
 
 > The people shown in the screenshots are not real. Their names and photos were generated
 > by [randomuser.me](https://randomuser.me/).
@@ -78,10 +78,10 @@ The APK ends up in `src/Relate/bin/Release/net10.0-android/publish/`.
 
 ## Versioning
 
-The app version is `0.0.1-<build>` (the `0.0.1` part is `VersionPrefix` in `Relate.csproj`):
+The app version is `0.1.0-<build>` (the `0.1.0` part is `VersionPrefix` in `Relate.csproj`):
 
-- **CI:** `<build>` is the GitHub Actions run number, e.g. `0.0.1-42`.
-- **Local builds:** `<build>` is the UTC build timestamp, e.g. `0.0.1-20261004215530`.
+- **CI:** `<build>` is the GitHub Actions run number, e.g. `0.1.0-42`.
+- **Local builds:** `<build>` is the UTC build timestamp, e.g. `0.1.0-20261004215530`.
 
 Android's internal `versionCode` is the number of minutes since 2025-01-01 UTC, so every new
 build (local or CI) can be installed as an update of the previous one.
@@ -93,7 +93,7 @@ build (local or CI) can be installed as an update of the previous one.
 - **Other branches:** every push runs the unit tests.
 - **`main`:** only a push that changes files under `src/` runs the unit tests and, if they
   pass, builds a signed APK and publishes it as a GitHub **pre-release** tagged
-  `v0.0.1-<run number>`. A push to `main` that changes only docs, the pipeline or other
+  `v0.1.0-<run number>`. A push to `main` that changes only docs, the pipeline or other
   non-code files skips both.
 - A manual run (*Run workflow*) on `main` always tests and releases, e.g. after fixing
   the pipeline itself.

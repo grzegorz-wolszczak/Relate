@@ -8,10 +8,10 @@ public class CallDisplayHelperManualContactTests
    public void GetManualContactDisplay_with_no_date_shows_not_available()
    {
       // Arrange & Act
-      var text = CallDisplayHelper.GetManualContactDisplay("meeting", null);
+      var text = CallDisplayHelper.GetManualContactDisplay("in-person", null);
 
       // Assert
-      text.Should().Be("Last meeting: <N/A>");
+      text.Should().Be("Last in-person: <N/A>");
    }
 
    [Fact]

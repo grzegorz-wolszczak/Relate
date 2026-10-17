@@ -12,7 +12,7 @@ public partial class ProblemReporterVm : BaseVm
 
 
    [ObservableProperty]
-   private string _logContent;
+   private string _logContent = string.Empty;
 
    private StringBuilder _builder = new();
 

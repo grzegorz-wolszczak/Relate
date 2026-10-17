@@ -85,7 +85,7 @@ public class ContactListPage : BaseContentPage<ContactListVm>
 
                //Content = ContactListTabView(),
 
-               /// fresh takes a lot of time !
+               // fresh takes a lot of time !
 
                Content = new RefreshView() {Content = ContactListTabView()}
                   .Bind(RefreshView.IsRefreshingProperty, getter: (ContactListVm vm) => vm.IsListRefreshing)

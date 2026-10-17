@@ -6,7 +6,7 @@ namespace Relate.AppLogic;
 
 public static class CallDisplayHelper
 {
-   // The card shown for a contact's most recent contact of any type (call, meeting, video
+   // The card shown for a contact's most recent contact of any type (call, in-person, video
    // call, ...). The call duration line only makes sense - and is only ever supplied - for an
    // actual phone call; other types just show when and how.
    public static string GetLastContactCardDisplay(

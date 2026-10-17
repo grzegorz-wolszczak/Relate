@@ -1,4 +1,5 @@
 using OneOf;
+using Relate.AppLogic.CallProcessing;
 using Relate.AppLogic.Services.ConditionalCompilation;
 using Relate.AppLogic.Utils.OneOfActions;
 using Relate.Storage;
@@ -282,6 +283,28 @@ public class ContactListVmTests
       // Assert
       vm.IsListRefreshing.Should().BeFalse();
       _b.Enricher.Verify(e => e.EnrichContactsWithSystemData(It.IsAny<IEnumerable<RelateContactVm>>()), Times.AtLeastOnce);
+   }
+
+   [Fact]
+   public async Task Refresh_keeps_manual_contact_dates_that_were_not_saved_yet()
+   {
+      // Arrange
+      _b.Preferences.Set("SerializedListKey", """
+         [ { "id": "c1", "maxCallDuration": "00:30:00", "maxNoCallsDuration": "30.00:00:00", "displayName": "Ann", "phoneNumbers": [] } ]
+         """, null);
+      var vm = _b.Build();
+      await vm.LoadAsync();
+      var contact = vm.ObservableContacts.Single();
+      var metInPersonToday = new DateTimeOffset(2026, 8, 27, 0, 0, 0, TimeSpan.Zero);
+      contact.SetManualContactDate(ContactType.InPerson, metInPersonToday); // edit made on the details page, storage not written
+
+      // Act
+      await vm.RefreshContactListCommand.ExecuteAsync(null);
+
+      // Assert
+      vm.ObservableContacts.Should().ContainSingle().Which.Should().BeSameAs(contact);
+      contact.GetManualContactDate(ContactType.InPerson).Should().Be(metInPersonToday);
+      _b.Enricher.Verify(e => e.RefreshCollection(It.IsAny<IEnumerable<RelateContactVm>>()), Times.Once);
    }
 
    [Fact]

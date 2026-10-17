@@ -49,7 +49,7 @@ public partial class RelateContactVm : BaseVm
 
    [ObservableProperty]
    [NotifyPropertyChangedFor(nameof(ContactImageColor))]
-   private string _contactDisplayName;
+   private string _contactDisplayName = string.Empty;
 
    [ObservableProperty]
    [NotifyPropertyChangedFor(nameof(NextCallInDaysDisplay))]

@@ -112,15 +112,15 @@ public class MappingExtensionsTests
    public void Dto_to_vm_loads_manual_contact_dates()
    {
       // Arrange
-      var meetingDate = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
+      var inPersonDate = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
       var dto = Dto("1", "Ada", 30, 20, aggregate: false);
-      dto.ManualContactDates = [new ManualContactDateDto {Type = ContactType.Meeting, Date = meetingDate}];
+      dto.ManualContactDates = [new ManualContactDateDto {Type = ContactType.InPerson, Date = inPersonDate}];
 
       // Act
       var vm = ToVms([dto]).Single();
 
       // Assert
-      vm.GetManualContactDate(ContactType.Meeting).Should().Be(meetingDate);
+      vm.GetManualContactDate(ContactType.InPerson).Should().Be(inPersonDate);
       vm.GetManualContactDate(ContactType.VideoCall).Should().BeNull();
    }
 
@@ -128,10 +128,10 @@ public class MappingExtensionsTests
    public void Vm_to_dto_round_trips_manual_contact_dates()
    {
       // Arrange
-      var meetingDate = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
+      var inPersonDate = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
       var videoCallDate = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
       var vm = new RelateContactVmBuilder().WithId("1").Build();
-      vm.SetManualContactDate(ContactType.Meeting, meetingDate);
+      vm.SetManualContactDate(ContactType.InPerson, inPersonDate);
       vm.SetManualContactDate(ContactType.VideoCall, videoCallDate);
 
       // Act
@@ -140,7 +140,7 @@ public class MappingExtensionsTests
       // Assert
       dto.ManualContactDates.Should().BeEquivalentTo(
       [
-         new ManualContactDateDto {Type = ContactType.Meeting, Date = meetingDate},
+         new ManualContactDateDto {Type = ContactType.InPerson, Date = inPersonDate},
          new ManualContactDateDto {Type = ContactType.VideoCall, Date = videoCallDate},
       ]);
    }

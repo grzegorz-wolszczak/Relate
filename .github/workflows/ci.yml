@@ -1,6 +1,6 @@
 # Other branches: every push runs the unit tests.
 # main: only a push that changes code (src/) runs the tests and, if they pass, builds a signed
-# APK and publishes it as a GitHub pre-release tagged v<VersionPrefix>-<run number>, e.g. v0.0.1-42.
+# APK and publishes it as a GitHub pre-release tagged v<VersionPrefix>-<run number>, e.g. v0.1.0-42.
 # A push to main touching only docs, this workflow or other non-code files skips both.
 # "Run workflow" (workflow_dispatch) counts as a code change, e.g. to release after a pipeline fix.
 name: CI

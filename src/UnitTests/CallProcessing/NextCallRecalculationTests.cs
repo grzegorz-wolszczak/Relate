@@ -46,7 +46,7 @@ public class NextCallRecalculationTests
          NextCallDateTime = At.Utc(2026, 9, 10, 17),
          NextCallInDays = 5,
          LastContactDateTime = lastContact,
-         LastContactType = ContactType.Meeting
+         LastContactType = ContactType.InPerson
       };
 
       // Act
@@ -54,7 +54,7 @@ public class NextCallRecalculationTests
 
       // Assert
       vm.LastContactDateTime.Should().Be(lastContact);
-      vm.LastContactType.Should().Be(ContactType.Meeting);
+      vm.LastContactType.Should().Be(ContactType.InPerson);
    }
 
    [Fact]

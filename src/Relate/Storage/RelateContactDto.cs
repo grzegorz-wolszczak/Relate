@@ -6,7 +6,7 @@ namespace Relate.Storage;
 public class RelateContactDto
 {
     [JsonPropertyName("id")]
-    public string Id { get; set; } // this is from call log, unique Id
+    public string Id { get; set; } = string.Empty; // this is from call log, unique Id
     [JsonPropertyName("maxCallDuration")]
     public TimeSpan MinCallDuration { get; set; }
 
@@ -24,7 +24,7 @@ public class RelateContactDto
     public List<ManualContactDateDto> ManualContactDates { get; set; } = new();
 
     [JsonPropertyName("displayName")]
-    public string DisplayName { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
 
     [JsonPropertyName("phoneNumbers")]
     public List<string> PhoneNumbers { get; set; } = new();

@@ -5,8 +5,10 @@ namespace Relate.AppLogic.Services.ConditionalCompilation;
 
 public class FileSystemServices
 {
+#if ANDROID
    private const string BackupFolderName = "Relate";
    private const string BackupFileName = "Contacts.backup.json";
+#endif
 
    public static async Task<OneOf<string,
       ActionError,
@@ -38,8 +40,13 @@ public class FileSystemServices
    }
 
 #if ANDROID
-   private static string? CandidateDir(string publicDirectoryType)
+   private static string? CandidateDir(string? publicDirectoryType)
    {
+      if (publicDirectoryType is null)
+      {
+         return null;
+      }
+
       var root = Android.OS.Environment
          .GetExternalStoragePublicDirectory(publicDirectoryType)?.AbsolutePath;
       return string.IsNullOrEmpty(root) ? null : Path.Combine(root, BackupFolderName);

@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿using System.Globalization;
+using Android.Content;
 using Android.Provider;
 using Relate.AppLogic.Utils.OneOfActions;
 using OneOf;
@@ -11,7 +12,13 @@ public static class ContactsPhotoProvider
         var context = Platform.AppContext;
         try
         {
-            var uri = ContentUris.WithAppendedId(ContactsContract.Contacts.ContentUri, long.Parse(contactId));
+            var contactsUri = ContactsContract.Contacts.ContentUri;
+            if (contactsUri is null)
+            {
+                return new ActionError("Contacts content uri is not available");
+            }
+
+            var uri = ContentUris.WithAppendedId(contactsUri, long.Parse(contactId, CultureInfo.InvariantCulture));
             var inputStream = ContactsContract.Contacts.OpenContactPhotoInputStream(context.ContentResolver, uri, true);
             if (inputStream == null)
             {
