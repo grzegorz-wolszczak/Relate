@@ -350,9 +350,15 @@ public sealed class ContactDetailsPage : BaseContentPage<RelateContactVm>
             MaximumDate = DateTime.Today.AddDays(1).AddTicks(-1)
          }
          .Bind(DatePicker.DateProperty,
-            getter: (ManualContactEntryVm e) => e.DateOrToday,
-            setter: (ManualContactEntryVm e, DateTime value) =>
-               e.Date = new DateTimeOffset(value, TimeZoneInfo.Local.GetUtcOffset(value)),
+            getter: (ManualContactEntryVm e) => e.PickerDate,
+            setter: (ManualContactEntryVm e, DateTime? value) =>
+            {
+               // null only comes from our own getter (no date set yet), never from the user
+               if (value is { } date)
+               {
+                  e.Date = new DateTimeOffset(date, TimeZoneInfo.Local.GetUtcOffset(date));
+               }
+            },
             mode: BindingMode.TwoWay);
 
       var setOverlay = new Grid()

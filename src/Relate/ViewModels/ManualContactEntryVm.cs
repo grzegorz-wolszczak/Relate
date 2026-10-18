@@ -20,11 +20,14 @@ public partial class ManualContactEntryVm : ObservableObject
 
    [ObservableProperty]
    [NotifyPropertyChangedFor(nameof(SummaryDisplay))]
-   [NotifyPropertyChangedFor(nameof(DateOrToday))]
+   [NotifyPropertyChangedFor(nameof(PickerDate))]
    private DateTimeOffset? _date;
 
-   // plain DateTime for two-way binding to DatePicker.Date (which is non-nullable)
-   public DateTime DateOrToday => Date?.LocalDateTime.Date ?? DateTime.Today;
+   // Local calendar date for two-way binding to DatePicker.Date (nullable since MAUI 10).
+   // Must stay null while no date is set: if it defaulted to today, picking "today" would not
+   // change the picker's value, so the binding would never write it back and the date would
+   // silently not be saved.
+   public DateTime? PickerDate => Date?.LocalDateTime.Date;
 
    public string SummaryDisplay => CallDisplayHelper.GetManualContactDisplay(Label, Date);
 
